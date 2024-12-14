@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# Nerd Font icons for different battery levels
+BATTERY_FULL="󰁹"       # Full battery icon
+BATTERY_HIGH="󰂁"       # High battery icon
+BATTERY_MEDIUM="󰂀"     # Medium battery icon
+BATTERY_LOW="󰁻"        # Low battery icon
+BATTERY_CRITICAL="󰂃"   # Critical battery icon
+BATTERY_CHARGING="󰂄"   # Charging icon
+
+# Get battery percentage and state
+BATTERY_PERCENT=$(cat /sys/class/power_supply/BAT1/capacity)
+BATTERY_STATE=$(cat /sys/class/power_supply/BAT1/status)
+
+# Choose the appropriate icon based on percentage and state
+if [ "$BATTERY_STATE" == "Charging" ]; then
+  ICON="$BATTERY_CHARGING"
+else
+  if [ "$BATTERY_PERCENT" -ge 80 ]; then
+    ICON="$BATTERY_FULL"
+  elif [ "$BATTERY_PERCENT" -ge 60 ]; then
+    ICON="$BATTERY_HIGH"
+  elif [ "$BATTERY_PERCENT" -ge 40 ]; then
+    ICON="$BATTERY_MEDIUM"
+  elif [ "$BATTERY_PERCENT" -ge 20 ]; then
+    ICON="$BATTERY_LOW"
+  else
+    ICON="$BATTERY_CRITICAL"
+  fi
+fi
+
+# Output icon and percentage
+echo "$ICON $BATTERY_PERCENT%"
