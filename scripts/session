@@ -1,0 +1,25 @@
+#!/bin/bash
+
+design="-fn Hack:size=15 -nb #2D121F -nf #FFFFFF -sb #B984E5 -sf #FFD7FF"
+
+CHOICE=$(echo -e "Shutdown\nReboot\nSuspend" | dmenu $design -i -p "Choose action:")
+
+if [ -n "$CHOICE" ]; then
+    CONFIRM=$(echo -e "Yes\nNo" | dmenu $design -i -p "Are you sure you want to $CHOICE?")
+    if [ "$CONFIRM" = "Yes" ]; then
+        case "$CHOICE" in
+            Shutdown)
+                systemctl poweroff
+                ;;
+            Reboot)
+                systemctl reboot
+                ;;
+            Suspend)
+                systemctl suspend
+                ;;
+            *)
+                echo "No valid choice made."
+                ;;
+        esac
+    fi
+fi
