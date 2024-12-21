@@ -69,7 +69,7 @@ static const struct arg args[] = {
   { netspeed_tx, " %s | ", "wlan0" },
   { datetime, "%s | ", "%H:%M" },
 	{ datetime, "%s | ",           "%b %d, %Y [%a]" },
-  { run_command, "%s | ", "~/.sources/scripts/dynamic_volume" },
-  { run_command, "%s | ", "~/.sources/scripts/battery_status" },
-  { run_command, "%s ", "~/.sources/scripts/network_status" },
+  { run_command, "%s | ", "~/.dwm-setup/slstatus/scripts/dynamic_volume" },
+  { run_command, "%s | ", "~/.dwm-setup/slstatus/scripts/battery_status" },
+  { run_command, "%s", "~/.dwm-setup/slstatus/scripts/network_status" },
 };
