@@ -5,7 +5,7 @@ mute=$(amixer get Master | grep 'Front Left' | grep -oP '\[off\]|\[on\]')
 volume=$(amixer get Master | grep -oP '\d+%' | head -1)
 
 # Determine the icon based on mute state
-if [ "$mute" = "[off]" ]; then
+if [[ $mute == "[off]" ]]; then
     icon="󰝟"  # Muted icon
 else
     icon="󰕾"  # Unmuted icon

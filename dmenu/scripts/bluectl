@@ -13,16 +13,32 @@ list_devices() {
     bluetoothctl devices | awk '{print $2 " " $3 " " $4 " " $5 " " $6}'
 }
 
+bluetooth_status() {
+  status=$(rfkill list all | grep -A 1 -i "bluetooth" | grep -i "soft blocked" | awk '{print $NF}')
+  
+  if [[ $status == "yes" ]]; then
+    echo "On"
+  else
+    echo "Off"
+  fi
+}
+BT_STATUS=$(bluetooth_status)
 # Main menu
-ACTION=$(echo -e "Scan\nPair\nUnpair\nConnect\nDisconnect" | $dmenu -i -p "Bluetooth Action:")
+ACTION=$(echo -e "$BT_STATUS\nScan\nPair\nUnpair\nConnect\nDisconnect" | $dmenu -i -p "Bluetooth Action:")
 
 case $ACTION in
+    "On")
+      rfkill unblock bluetooth
+      ;;
+    "Off")
+      rfkill block bluetooth
+      ;;
     "Scan")
         # Start scanning for devices
         notify-send "Bluetooth" "Scanning for devices..."
         bluetoothctl --timeout 5 scan on
         SCANNED_DEVICES=$(bluetoothctl devices | awk '{print $2 " " $3 " " $4 " " $5 " " $6}')
-        if [ -n "$SCANNED_DEVICES" ]; then
+        if [[ -n $SCANNED_DEVICES ]]; then
             notify-send "Bluetooth" "Scan complete. Devices updated."
         else
             notify-send "Bluetooth" "No devices found."
@@ -30,25 +46,25 @@ case $ACTION in
         ;;
     "Pair")
         DEVICE=$(list_devices | $dmenu -i -p "Select device to pair:" | awk '{print $1}')
-        if [ -n "$DEVICE" ]; then
+        if [[ -n $DEVICE ]]; then
             bluetoothctl pair "$DEVICE" && notify-send "Bluetooth" "Paired with $DEVICE"
         fi
         ;;
     "Unpair")
         DEVICE=$(list_devices | $dmenu -i -p "Select device to unpair:" | awk '{print $1}')
-        if [ -n "$DEVICE" ]; then
+        if [[ -n $DEVICE ]]; then
             bluetoothctl remove "$DEVICE" && notify-send "Bluetooth" "Unpaired $DEVICE"
         fi
         ;;
     "Connect")
         DEVICE=$(list_devices | $dmenu -i -p "Select device to connect:" | awk '{print $1}')
-        if [ -n "$DEVICE" ]; then
+        if [[ -n $DEVICE ]]; then
             bluetoothctl connect "$DEVICE" && notify-send "Bluetooth" "Connected to $DEVICE"
         fi
         ;;
     "Disconnect")
         DEVICE=$(list_devices | $dmenu -i -p "Select device to disconnect:" | awk '{print $1}')
-        if [ -n "$DEVICE" ]; then
+        if [[ -n $DEVICE ]]; then
             bluetoothctl disconnect "$DEVICE" && notify-send "Bluetooth" "Disconnected from $DEVICE"
         fi
         ;;

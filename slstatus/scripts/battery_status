@@ -13,16 +13,17 @@ BATTERY_PERCENT=$(cat /sys/class/power_supply/BAT1/capacity)
 BATTERY_STATE=$(cat /sys/class/power_supply/BAT1/status)
 
 # Choose the appropriate icon based on percentage and state
-if [ "$BATTERY_STATE" == "Charging" ]; then
+# Choose the appropriate icon based on percentage and state
+if [[ $BATTERY_STATE == "Charging" ]]; then
   ICON="$BATTERY_CHARGING"
 else
-  if [ "$BATTERY_PERCENT" -ge 80 ]; then
+  if [[ $BATTERY_PERCENT -ge 80 ]]; then
     ICON="$BATTERY_FULL"
-  elif [ "$BATTERY_PERCENT" -ge 60 ]; then
+  elif [[ $BATTERY_PERCENT -ge 60 ]]; then
     ICON="$BATTERY_HIGH"
-  elif [ "$BATTERY_PERCENT" -ge 40 ]; then
+  elif [[ $BATTERY_PERCENT -ge 40 ]]; then
     ICON="$BATTERY_MEDIUM"
-  elif [ "$BATTERY_PERCENT" -ge 20 ]; then
+  elif [[ $BATTERY_PERCENT -ge 20 ]]; then
     ICON="$BATTERY_LOW"
   else
     ICON="$BATTERY_CRITICAL"

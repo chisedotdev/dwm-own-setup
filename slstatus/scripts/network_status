@@ -7,13 +7,12 @@ ETH_CONNECTED="󰈀"       # Ethernet icon
 ETH_DISCONNECTED="󰈂"    # Ethernet icon with an X
 
 # Check Ethernet connection (assumes interface is eth0 or similar; adjust if needed)
-if ip link show up | grep -q "eth0"; then
-  echo "$ETH_CONNECTED"
+if [[ $(ip link show up | grep -q eth0) ]]; then
+  echo $ETH_CONNECTED
 # Check Wi-Fi connection
-elif iwgetid -r &> /dev/null; then
-  echo "$WIFI_CONNECTED"
+elif [[ -n $(iwgetid -r) ]]; then
+  echo $WIFI_CONNECTED
 # Neither Ethernet nor Wi-Fi connected
 else
-  echo "$WIFI_DISCONNECTED"
+  echo $WIFI_DISCONNECTED
 fi
-

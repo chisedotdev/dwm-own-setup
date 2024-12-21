@@ -1,0 +1,28 @@
+#!/bin/bash
+
+BT_ON="󰂯"
+BT_OFF="󰂲"
+BT_CONN="󰂰"
+
+bluetooth_status() {
+  status=$(rfkill list all | grep -A 1 -i "bluetooth" | grep -i "soft blocked" | awk '{print $NF}')
+  
+  if [[ $status == "yes" ]]; then
+    echo "off"
+  else
+    echo "on"
+  fi
+}
+
+BT_STATUS=$(bluetooth_status)
+
+if [[ $BT_STATUS == "on" ]]; then
+  IS_CONN=$(bluetoothctl devices Connected)
+  if [[ -n $IS_CONN ]]; then
+    echo $BT_CONN
+  else
+    echo $BT_ON
+  fi
+else
+  echo $BT_OFF
+fi

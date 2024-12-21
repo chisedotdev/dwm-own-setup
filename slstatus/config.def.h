@@ -71,5 +71,6 @@ static const struct arg args[] = {
 	{ datetime, "%s | ",           "%b %d, %Y [%a]" },
   { run_command, "%s | ", "~/.dwm-setup/slstatus/scripts/dynamic_volume" },
   { run_command, "%s | ", "~/.dwm-setup/slstatus/scripts/battery_status" },
+  { run_command, "%s | ", "~/.dwm-setup/slstatus/scripts/bluetooth_status" },
   { run_command, "%s", "~/.dwm-setup/slstatus/scripts/network_status" },
 };
