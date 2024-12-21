@@ -2,7 +2,7 @@
 
 dmenu="dmenu -fn Hack:size=15 -nb #2D121F -nf #FFFFFF -sb #B984E5 -sf #FFD7FF"
 
-CHOICE=$(echo -e "Shutdown\nReboot\nSuspend" | $dmenu -i -p "Choose action:")
+CHOICE=$(echo -e "Shutdown\nReboot\nSuspend\nLogout" | $dmenu -i -p "Choose action:")
 
 if [ -n "$CHOICE" ]; then
     CONFIRM=$(echo -e "Yes\nNo" | $dmenu -i -p "Are you sure you want to $CHOICE?")
@@ -16,6 +16,9 @@ if [ -n "$CHOICE" ]; then
                 ;;
             Suspend)
                 systemctl suspend
+                ;;
+            Logout)
+                killall dwm
                 ;;
             *)
                 echo "No valid choice made."
