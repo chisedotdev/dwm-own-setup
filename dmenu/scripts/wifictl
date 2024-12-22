@@ -1,0 +1,98 @@
+#!/bin/bash
+
+dmenu="dmenu -fn Hack:size=15 -nb #2D121F -nf #FFFFFF -sb #B984E5 -sf #FFD7FF"
+
+list_networks() {
+    if [[ -n $(iwgetid -r) ]]; then
+        iwctl station wlan0 get-networks | tr -d '>/>' | awk '/psk/ {print $4, $1}' | sed 's/ //g' | sed -E 's/\x1b\[[0-9;]*m//g' 
+    else
+        iwctl station wlan0 get-networks | awk '/psk/ {print $2, $1}' | sed 's/psk//g' | sed 's/ //g' | sed -E 's/\x1b\[[0-9;]*m//g'
+    fi
+}
+
+wifi_status() {
+    status=$(rfkill list all | grep -A 1 -i "wireless" | grep -i "soft blocked" | awk '{print $NF}')
+
+    if [[ $status == "yes" ]]; then
+        echo "On"
+    else
+        echo "Off"
+    fi
+}
+
+known_networks() {
+    iwctl known-networks list | awk '/psk/ {print $2}'
+}
+
+WIFI_STATUS=$(wifi_status)
+
+# Main menu
+ACTION=$(echo -e "$WIFI_STATUS\nScan\nConnect\nDisconnect\nForget" | $dmenu -i -p "WiFi Action:")
+
+STATION=$(iwctl station list | grep "connected" | awk '{print $2}')
+
+case $ACTION in
+    "On")
+      notify-send "WiFi" "WiFi Enabled"
+      rfkill unblock wifi
+      ;;
+    "Off")
+      notify-send "WiFi" "WiFi Disabled"
+      rfkill block wifi 
+      ;;
+    "Scan")
+        # Start scanning for devices
+        notify-send "WIFi" "Scanning for networks..."
+        iwctl station $STATION scan 
+        SCANNED_NETWORKS=$(list_networks)
+        if [[ -n $SCANNED_NETWORKS ]]; then
+            notify-send "WiFi" "Scan complete. Networks updated."
+        else
+            notify-send "WiFi" "Scan complete. No network found."
+        fi
+        ;;
+    "Connect")
+        NETWORK=$(list_networks | $dmenu -i -p "Select network to connect:" | awk '{print $1}')
+        if [[ -n $NETWORK ]]; then
+            if [[ $(known_networks) =~ $NETWORK ]]; then
+                IS_CONN=$(iwctl station $STATION connect $NETWORK)
+                if [[ -n $IS_CONN ]]; then
+                    notify-send "WiFI" "Failed to connect to $NETWORK"
+                else
+                    notify-send "WiFi" "Connected to $NETWORK"
+                fi
+            else
+                PASSWORD=$($dmenu -i -p "Enter password:")
+                IS_CONN=$(iwctl --passphrase $PASSWORD station $STATION connect $NETWORK)
+                if [[ -n $IS_CONN ]]; then
+                    notify-send "WiFI" "Failed to connect to $NETWORK"
+                else
+                    notify-send "WiFi" "Connected to $NETWORK"
+                fi
+            fi
+        fi
+        ;;
+    "Disconnect")
+        NETWORK=$(iwctl station $STATION show | grep "Connected network" | awk '{print $3}')
+        CONFIRM=$(echo -e "Yes\nNo" | $dmenu -i -p "Are you sure you want to disconnect to $NETWORK?")
+        if [[ $CONFIRM == "Yes" ]]; then
+            notify-send "WiFi" "Disconnected to $NETWORK"
+            iwctl station $STATION disconnect 
+        fi
+        ;;
+    "Forget")
+        NETWORK=$(known_networks | $dmenu -i -p "Select network to forget:" | awk '{print $1}')
+        if [[ -n $NETWORK ]]; then
+            CONFIRM=$(echo -e "Yes\nNo" | $dmenu -i -p "Are you sure you want to forget to $NETWORK?")
+            if [[ $CONFIRM == "Yes" ]]; then
+                notify-send "WiFi" "Network forgotten successfully"
+                iwctl known-networks $NETWORK forget
+            fi
+        else
+            notify-send "WiFi" "Failed to forget network"
+        fi
+        ;;
+    *)
+        notify-send "WiFi" "No action selected."
+        ;;
+esac
