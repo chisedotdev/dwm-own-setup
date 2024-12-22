@@ -3,7 +3,7 @@
 dmenu="dmenu -fn Hack:size=15 -nb #2D121F -nf #FFFFFF -sb #B984E5 -sf #FFD7FF"
 
 # Ensure Bluetooth service is active
-if ! systemctl is-active --quiet bluetooth; then
+if [[ $(! systemctl is-active --quiet bluetooth) ]]; then
     notify-send "Bluetooth" "Starting Bluetooth service..."
     sudo systemctl start bluetooth
 fi
@@ -28,9 +28,11 @@ ACTION=$(echo -e "$BT_STATUS\nScan\nPair\nUnpair\nConnect\nDisconnect" | $dmenu 
 
 case $ACTION in
     "On")
+      notify-send "Bluetooth" "Bluetooth Enabled"
       rfkill unblock bluetooth
       ;;
     "Off")
+      notify-send "Bluetooth" "Bluetooth Disabled"
       rfkill block bluetooth
       ;;
     "Scan")
