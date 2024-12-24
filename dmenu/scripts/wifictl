@@ -33,16 +33,16 @@ STATION=$(iwctl station list | grep "connected" | awk '{print $2}')
 
 case $ACTION in
     "On")
-      notify-send "WiFi" "WiFi Enabled"
+      notify-send "WiFi" "WiFi Enabled."
       rfkill unblock wifi
       ;;
     "Off")
-      notify-send "WiFi" "WiFi Disabled"
+      notify-send "WiFi" "WiFi Disabled."
       rfkill block wifi 
       ;;
     "Scan")
         # Start scanning for devices
-        notify-send "WIFi" "Scanning for networks..."
+        notify-send "WIFi" "Scanning for networks."
         iwctl station $STATION scan 
         SCANNED_NETWORKS=$(list_networks)
         if [[ -n $SCANNED_NETWORKS ]]; then
@@ -57,17 +57,17 @@ case $ACTION in
             if [[ $(known_networks) =~ $NETWORK ]]; then
                 IS_CONN=$(iwctl station $STATION connect $NETWORK)
                 if [[ -n $IS_CONN ]]; then
-                    notify-send "WiFI" "Failed to connect to $NETWORK"
+                    notify-send "WiFI" "Failed to connect to $NETWORK."
                 else
-                    notify-send "WiFi" "Connected to $NETWORK"
+                    notify-send "WiFi" "Connected to $NETWORK."
                 fi
             else
                 PASSWORD=$($dmenu -i -p "Enter password:")
                 IS_CONN=$(iwctl --passphrase $PASSWORD station $STATION connect $NETWORK)
                 if [[ -n $IS_CONN ]]; then
-                    notify-send "WiFI" "Failed to connect to $NETWORK"
+                    notify-send "WiFI" "Failed to connect to $NETWORK."
                 else
-                    notify-send "WiFi" "Connected to $NETWORK"
+                    notify-send "WiFi" "Connected to $NETWORK."
                 fi
             fi
         fi
@@ -76,7 +76,7 @@ case $ACTION in
         NETWORK=$(iwctl station $STATION show | grep "Connected network" | awk '{print $3}')
         CONFIRM=$(echo -e "Yes\nNo" | $dmenu -i -p "Are you sure you want to disconnect to $NETWORK?")
         if [[ $CONFIRM == "Yes" ]]; then
-            notify-send "WiFi" "Disconnected to $NETWORK"
+            notify-send "WiFi" "Disconnected to $NETWORK."
             iwctl station $STATION disconnect 
         fi
         ;;
@@ -85,11 +85,11 @@ case $ACTION in
         if [[ -n $NETWORK ]]; then
             CONFIRM=$(echo -e "Yes\nNo" | $dmenu -i -p "Are you sure you want to forget to $NETWORK?")
             if [[ $CONFIRM == "Yes" ]]; then
-                notify-send "WiFi" "Network forgotten successfully"
+                notify-send "WiFi" "Network forgotten successfully."
                 iwctl known-networks $NETWORK forget
             fi
         else
-            notify-send "WiFi" "Failed to forget network"
+            notify-send "WiFi" "Failed to forget network."
         fi
         ;;
     *)
