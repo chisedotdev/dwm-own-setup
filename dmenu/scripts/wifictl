@@ -4,9 +4,11 @@ dmenu="dmenu -fn Hack:size=15 -nb #2D121F -nf #FFFFFF -sb #B984E5 -sf #FFD7FF"
 
 list_networks() {
     if [[ -n $(iwgetid -r) ]]; then
-        iwctl station wlan0 get-networks | tr -d '>/>' | awk '/psk/ {print $4, $1}' | sed 's/ //g' | sed -E 's/\x1b\[[0-9;]*m//g' 
+        iwctl station wlan0 get-networks  | grep -v 'Network name' | sed -E 's/\x1b\[[0-9;]*m//g' | sed -nE 's/^\s*>?\s*(.*?)\s+(psk|open|none)\s+.*$/\1\t\2/p' | tr -d '\t' | sed 's/psk//g'
+        #iwctl station wlan0 get-networks | tr -d '>/>' | awk '/psk/ {print $4, $1}' | sed 's/ //g' | sed -E 's/\x1b\[[0-9;]*m//g' 
     else
-        iwctl station wlan0 get-networks | awk '/psk/ {print $2, $1}' | sed 's/psk//g' | sed 's/ //g' | sed -E 's/\x1b\[[0-9;]*m//g'
+        iwctl station wlan0 get-networks  | grep -v 'Network name' | sed -E 's/\x1b\[[0-9;]*m//g' | sed -nE 's/^\s*>?\s*(.*?)\s+(psk|open|none)\s+.*$/\1\t\2/p' | tr -d '\t' | sed 's/psk//g'
+        #iwctl station wlan0 get-networks | awk '/psk/ {print $2, $1}' | sed 's/psk//g' | sed 's/ //g' | sed -E 's/\x1b\[[0-9;]*m//g'
     fi
 }
 
@@ -54,20 +56,21 @@ case $ACTION in
     "Connect")
         NETWORK=$(list_networks | $dmenu -i -p "Select network to connect:" | awk '{print $1}')
         if [[ -n $NETWORK ]]; then
-            if [[ $(known_networks) =~ $NETWORK ]]; then
-                IS_CONN=$(iwctl station $STATION connect $NETWORK)
+            if [[ $(known_networks) =~ "$NETWORK" ]]; then
+                IS_CONN=$(iwctl station $STATION connect "$NETWORK")
                 if [[ -n $IS_CONN ]]; then
-                    notify-send "WiFI" "Failed to connect to $NETWORK."
+                    notify-send "WiFI" "Failed to connect to \"$NETWORK\"."
                 else
-                    notify-send "WiFi" "Connected to $NETWORK."
+                    notify-send "WiFi" "Connected to \"$NETWORK\"."
                 fi
             else
                 PASSWORD=$($dmenu -i -p "Enter password:")
-                IS_CONN=$(iwctl --passphrase $PASSWORD station $STATION connect $NETWORK)
+                IS_CONN=$(iwctl --passphrase $PASSWORD station $STATION connect "$NETWORK")
+                echo "NETWORK: $NETWORK"
                 if [[ -n $IS_CONN ]]; then
-                    notify-send "WiFI" "Failed to connect to $NETWORK."
+                    notify-send "WiFI" "Failed to connect to \"$NETWORK\"."
                 else
-                    notify-send "WiFi" "Connected to $NETWORK."
+                    notify-send "WiFi" "Connected to \"$NETWORK\"."
                 fi
             fi
         fi
