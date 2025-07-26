@@ -23,7 +23,8 @@ wifi_status() {
 }
 
 known_networks() {
-    iwctl known-networks list | awk '/psk/ {print $2}'
+    iwctl known-networks list | sed -E 's/\x1b\[[0-9;]*m//g' | awk '{gsub(/^[ \t]+|[ \t]+$/, "", $0);gsub(/[^[:print:]]+$/, "", $0)} /^Known Networks$/{next} /^[-]{10,}$/{next} /^[ \t]*Name[ \t]*Security[ \t]*Hidden[ \t]*Last connected$/{next} {sub(/[ \t]*psk[ \t]*/, "", $0); sub(/[A-Za-z]{3}[ \t]+[0-9]{1,2},?[ \t]*[0-9]{1,2}:[0-9]{2}[ \t]*(AM|PM)[ \t]*$/, "", $0); gsub(/[ \t]+$/, "", $0); if ($0 == "") { next } print $0}'
+
 }
 
 WIFI_STATUS=$(wifi_status)
@@ -54,23 +55,22 @@ case $ACTION in
         fi
         ;;
     "Connect")
-        NETWORK=$(list_networks | $dmenu -i -p "Select network to connect:" | awk '{print $1}')
+        NETWORK=$(list_networks | $dmenu -i -p "Select network to connect:" | awk '{print $0}' | awk '{$1=$1};1')
         if [[ -n $NETWORK ]]; then
-            if [[ $(known_networks) =~ "$NETWORK" ]]; then
+            if [[ $(known_networks) =~ $NETWORK ]]; then
                 IS_CONN=$(iwctl station $STATION connect "$NETWORK")
                 if [[ -n $IS_CONN ]]; then
-                    notify-send "WiFI" "Failed to connect to \"$NETWORK\"."
+                    notify-send "WiFI" "Failed to connect to $NETWORK."
                 else
-                    notify-send "WiFi" "Connected to \"$NETWORK\"."
+                    notify-send "WiFi" "Connected to $NETWORK."
                 fi
             else
                 PASSWORD=$($dmenu -i -p "Enter password:")
                 IS_CONN=$(iwctl --passphrase $PASSWORD station $STATION connect "$NETWORK")
-                echo "NETWORK: $NETWORK"
                 if [[ -n $IS_CONN ]]; then
-                    notify-send "WiFI" "Failed to connect to \"$NETWORK\"."
+                    notify-send "WiFI" "Failed to connect to $NETWORK."
                 else
-                    notify-send "WiFi" "Connected to \"$NETWORK\"."
+                    notify-send "WiFi" "Connected to $NETWORK."
                 fi
             fi
         fi
